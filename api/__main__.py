@@ -68,7 +68,7 @@ from .models import (
 )
 
 app = FastAPI()
-DATABASE_URL = "./var/primary/fuse/classes.db"
+DATABASE_URL = "./api/share/classes.db"
 db_connection = sqlite3.connect(DATABASE_URL)
 db_connection.isolation_level = None
 
@@ -372,3 +372,4 @@ async def main():
 
 if __name__ == "__main__":
     run(main())
+

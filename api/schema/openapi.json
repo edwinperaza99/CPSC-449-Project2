@@ -1,0 +1,241 @@
+{
+	"openapi": "3.1.0",
+	"info": {
+		"title": "FastAPI",
+		"version": "0.1.0"
+	},
+	"paths": {
+		"/db_liveness": {
+			"get": {
+				"summary": "Check Db Health",
+				"operationId": "check_db_health",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/classes": {
+			"get": {
+				"summary": "Available Classes",
+				"description": "API to fetch list of available classes for a given department name.\n\nArgs:\n    department_name (str): Department name\n\nReturns:\n    AvailableClassResponse: AvailableClassResponse model",
+				"operationId": "available_classes",
+				"parameters": [{
+					"name": "department_name",
+					"in": "query",
+					"required": true,
+					"schema": {
+						"type": "string",
+						"title": "Department Name"
+					}
+				}],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AvailableClassResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/enrollment": {
+			"post": {
+				"summary": "Course Enrollment",
+				"description": "Allow enrollment of a course under given section for a student\n\nArgs:\n    enrollment_request (EnrollmentRequest): EnrollmentRequest model\n\nRaises:\n    HTTPException: Raise HTTP exception when role is not authrorized\n    HTTPException: Raise HTTP exception when query fail to execute in database\n\nReturns:\n    EnrollmentResponse: EnrollmentResponse model",
+				"operationId": "course_enrollment",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/EnrollmentRequest"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/EnrollmentResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"AvailableClass": {
+				"properties": {
+					"course_code": {
+						"type": "integer",
+						"title": "Course Code"
+					},
+					"course_name": {
+						"type": "string",
+						"title": "Course Name"
+					},
+					"department": {
+						"type": "string",
+						"title": "Department"
+					},
+					"instructor_first_name": {
+						"type": "string",
+						"title": "Instructor First Name"
+					},
+					"instructor_last_name": {
+						"type": "string",
+						"title": "Instructor Last Name"
+					},
+					"current_enrollment": {
+						"type": "integer",
+						"title": "Current Enrollment"
+					},
+					"max_enrollment": {
+						"type": "integer",
+						"title": "Max Enrollment"
+					},
+					"waitlist": {
+						"type": "integer",
+						"title": "Waitlist"
+					},
+					"section_number": {
+						"type": "integer",
+						"title": "Section Number"
+					}
+				},
+				"type": "object",
+				"required": ["course_code", "course_name", "department", "instructor_first_name", "instructor_last_name", "current_enrollment", "max_enrollment", "waitlist", "section_number"],
+				"title": "AvailableClass"
+			},
+			"AvailableClassResponse": {
+				"properties": {
+					"available_classes": {
+						"items": {
+							"$ref": "#/components/schemas/AvailableClass"
+						},
+						"type": "array",
+						"title": "Available Classes"
+					}
+				},
+				"type": "object",
+				"required": ["available_classes"],
+				"title": "AvailableClassResponse"
+			},
+			"EnrollmentRequest": {
+				"properties": {
+					"section_id": {
+						"type": "integer",
+						"title": "Section Id"
+					},
+					"course_code": {
+						"type": "integer",
+						"title": "Course Code"
+					},
+					"student_id": {
+						"type": "integer",
+						"title": "Student Id"
+					}
+				},
+				"type": "object",
+				"required": ["section_id", "course_code", "student_id"],
+				"title": "EnrollmentRequest"
+			},
+			"EnrollmentResponse": {
+				"properties": {
+					"enrollment_status": {
+						"type": "string",
+						"title": "Enrollment Status"
+					},
+					"enrollment_date": {
+						"anyOf": [{
+							"type": "string",
+							"format": "date-time"
+						}, {
+							"type": "null"
+						}],
+						"title": "Enrollment Date"
+					}
+				},
+				"type": "object",
+				"required": ["enrollment_status"],
+				"title": "EnrollmentResponse"
+			},
+			"HTTPValidationError": {
+				"properties": {
+					"detail": {
+						"items": {
+							"$ref": "#/components/schemas/ValidationError"
+						},
+						"type": "array",
+						"title": "Detail"
+					}
+				},
+				"type": "object",
+				"title": "HTTPValidationError"
+			},
+			"ValidationError": {
+				"properties": {
+					"loc": {
+						"items": {
+							"anyOf": [{
+								"type": "string"
+							}, {
+								"type": "integer"
+							}]
+						},
+						"type": "array",
+						"title": "Location"
+					},
+					"msg": {
+						"type": "string",
+						"title": "Message"
+					},
+					"type": {
+						"type": "string",
+						"title": "Error Type"
+					}
+				},
+				"type": "object",
+				"required": ["loc", "msg", "type"],
+				"title": "ValidationError"
+			}
+		}
+	}
+}
