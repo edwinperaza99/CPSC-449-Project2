@@ -1,29 +1,18 @@
-# CPSC-449 Project 1
-
-## Group Members
-
-- Edwin Peraza
-- Divya Tanwar
-- Gaurav Warad
-- Abhinav Singh
-- Ryan Novoa
-- Chase Walsh
+# CPSC-449-Project2
 
 ## Project Description
-This project is a RESTful API designed to retrieve different records from a university system.
 
-## Run Instruction
-- Checkout the git repo
-- cd CPSC-449-Project1
-- Run following the command
+[description]
 
-```
-make # Initialize Python virtual env and install required packages
+## Project Members
 
-chmod 777 ./api/bin/init.sh # Give permission
+- Edwin Peraza
+- Anurag Ganji
+- Harin Khalkhi
+- Arjit Saxena
+- Daniel Truong
+- Chase Walsh
 
-./api/bin/init.sh # Setup Database
+## Getting Started
 
-foreman start # Start the server
-```
-
+[instructions]
