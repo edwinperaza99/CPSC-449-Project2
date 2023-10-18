@@ -1,0 +1,16 @@
+{
+	"$schema": "https://www.krakend.io/schema/v2.4/krakend.json",
+	"version": 3,
+	"endpoints": [
+		{
+			"endpoint": "/api/classes",
+			"method": "GET",
+			"backend": [
+				{
+					"url_pattern": "/classes",
+					"host": ["http://localhost:5000"]
+				}
+			]
+		}
+	]
+}
