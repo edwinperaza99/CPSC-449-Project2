@@ -3,8 +3,13 @@
 PRAGMA foreign_keys=ON;
 BEGIN TRANSACTION;
 
--- Create the Users table
+-- Delete tables
+DROP TABLE IF EXISTS RegistrationList;
+DROP TABLE IF EXISTS Section;
+DROP TABLE IF EXISTS Class;
 DROP TABLE IF EXISTS Users;
+
+-- Create the Users table
 CREATE TABLE IF NOT EXISTS Users (
     CWID INTEGER PRIMARY KEY AUTOINCREMENT,
     Name TEXT NOT NULL,
@@ -14,7 +19,6 @@ CREATE TABLE IF NOT EXISTS Users (
 );
 
 -- Create the Class table
-DROP TABLE IF EXISTS Class;
 CREATE TABLE IF NOT EXISTS Class (
     CourseCode TEXT PRIMARY KEY,
     Name TEXT NOT NULL,
@@ -22,7 +26,6 @@ CREATE TABLE IF NOT EXISTS Class (
 );
 
 -- Create the Section table
-DROP TABLE IF EXISTS Section;
 CREATE TABLE IF NOT EXISTS Section (
     SectionNumber INTEGER NOT NULL,
     CourseCode TEXT NOT NULL,
@@ -38,7 +41,7 @@ CREATE TABLE IF NOT EXISTS Section (
 
 
 -- Create the RegistrationList table
-DROP TABLE IF EXISTS RegistrationList;
+
 CREATE TABLE IF NOT EXISTS RegistrationList (
     RecordID INTEGER PRIMARY KEY AUTOINCREMENT,
     StudentID INTEGER NOT NULL,
