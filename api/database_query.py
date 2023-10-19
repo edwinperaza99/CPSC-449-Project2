@@ -124,10 +124,10 @@ def check_status_query(db_connection: Connection, enrollment_request: Enrollment
     check_status_query = f""" SELECT Status, EnrollmentDate FROM RegistrationList where StudentID = {enrollment_request.student_id} and SectionNumber = {enrollment_request.section_number} and CourseCode = '{enrollment_request.course_code}'"""
     cursor = db_connection.cursor()
     try:
-        rows =  cursor.execute(check_status_query)
-        if rows.arraysize == 0:
-            raise HTTPException(status_code= status.HTTP_400_BAD_REQUEST, detail= f'Record not found')
-        row = rows.fetchone()
+        rows =  cursor.execute(check_status_query).fetchone()
+        if not rows:
+            return None
+        row = rows[0]
         if row[0] == RegistrationStatus.ENROLLED:
             return EnrollmentResponse(enrollment_status="already enrolled", enrollment_date=row[1])
     except Exception as err:
@@ -227,6 +227,15 @@ def check_section_exists(db_connection: Connection, course_code: str, section_nu
         result = True
     return result
 
+def check_if_active(db_connection, enrollment_request):
+    query = """SELECT SectionStatus from Section WHERE CourseCode = ? AND SectionNumber = ?"""
+    cursor = db_connection.cursor()
+    cursor.execute(query, (enrollment_request.course_code, enrollment_request.section_number))
+    result = cursor.fetchone()
+    if result is not None and (result[0] == "open"):
+        return True
+    else:
+        return False
 
 def check_is_instructor(db_connection: Connection, instructor_id: int)-> Union[str, None]:
     logger.info('Checking if user is instructor')

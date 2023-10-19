@@ -26,6 +26,7 @@ from .database_query import (
     changeSectionInstructor,
     freezeEnrollment,
     check_status_query,
+    check_if_active,
     check_is_instructor,
     get_enrolled_students,
     get_dropped_students,
@@ -125,7 +126,11 @@ async def course_enrollment(enrollment_request: EnrollmentRequest):
     eligibility_status = check_enrollment_eligibility(db_connection, enrollment_request.section_number, enrollment_request.course_code)
     if eligibility_status == RegistrationStatus.NOT_ELIGIBLE:
         return EnrollmentResponse(enrollment_status = 'not eligible')
-
+    active = check_if_active(db_connection, enrollment_request)
+    if active == False:
+        logger.info('Class is no longer active')
+        raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail= f'Class is no longer active')
+    
     try:
         registration = Registration(student_id = enrollment_request.student_id, enrollment_status = eligibility_status, 
                                     section_number = enrollment_request.section_number, course_code = enrollment_request.course_code) 
@@ -234,7 +239,7 @@ async def freeze_enrollment(freezeEnrollment_Request: FreezeEnrollmentRequest):
 ##########   WAITLIST ENDPOINTS     ######################
 # student viewing their position in the waitlist
 @app.get(path="/waitlist_position", operation_id="waitlist_position", response_model = WaitlistPositionRes)
-async def waitlist_position(waitlist_request: WaitlistPositionReq):
+async def waitlist_position(student_id: int):
     """API to fetch the current position of a student in a waitlist.
     Args:
         student_id: int
@@ -242,13 +247,13 @@ async def waitlist_position(waitlist_request: WaitlistPositionReq):
         WaitlistPositionRes: WaitlistPositionRes model
     """
     result = get_waitlist_status(db_connection=db_connection, 
-                                 student_id=waitlist_request.student_id)
+                                 student_id=student_id)
     logger.info('Succesffuly executed the query')
     return WaitlistPositionRes(waitlist_positions = result)
 
 # instructors viewing the current waitlist for a course and section
 @app.get(path="/view_waitlist", operation_id="view_waitlist", response_model = ViewWaitlistRes)
-async def view_waitlist(view_waitlist_req: ViewWaitlistReq):
+async def view_waitlist(course_code: str, section_number: int):
     """API to fetch the students in a waitlist.
     Args:
         section_number: int
@@ -257,8 +262,8 @@ async def view_waitlist(view_waitlist_req: ViewWaitlistReq):
         ViewWaitlistRes: ViewWaitlistRes model
     """
     result = get_waitlist(db_connection=db_connection, 
-                                 course_code=view_waitlist_req.course_code, 
-                                 section_number=view_waitlist_req.section_number)
+                                 course_code=course_code, 
+                                 section_number=section_number)
     logger.info('Succesffuly executed the query')
     return ViewWaitlistRes(waitlisted_students = result)
 
