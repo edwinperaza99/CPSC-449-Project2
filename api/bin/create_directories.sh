@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the root directory
-root_dir="var"
+root_dir="api/var"
 
 # Function to create a directory structure
 create_directory_structure() {
