@@ -39,6 +39,24 @@ async def check_db_health():
     except Exception as ex:
         return JSONResponse(content= {'status': 'not connected'}, status_code = status.HTTP_503_SERVICE_UNAVAILABLE)
 
+##########   USERS ENDPOINTS        ######################
+@app.post(path='/users/create', operation_id='create_user', response_model = CreateUserResponse)
+async def create_user(user_info: CreateUserRequest):
+    # check if username is available
+    if not is_username_available(users_connection, user_info.username):
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'username="{user_info.username}" already exist!')
+
+    # check if valid role
+    if not user_info.role in ['instructor', 'registrar', 'student']:
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"role={user_info.role} is not valid!")
+
+    # create entry in users table
+    response = add_user(users_connection, user_info)
+
+    if response == QueryStatus.SUCCESS:
+        return CreateUserResponse(message="user added successfully")
+    
+    return HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="some error occurred in database")
 
 ##########   STUDENTS ENDPOINTS     ######################
 @app.get(path="/classes", operation_id="available_classes", response_model = AvailableClassResponse)

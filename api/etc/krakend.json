@@ -3,6 +3,21 @@
 	"version": 3,
 	"endpoints": [
 		{
+			"endpoint": "/api/users/create/",
+            "method": "POST",
+            "backend": [
+                {
+                    "url_pattern": "/users/create",
+                    "host": ["http://localhost:5000"],
+                    "extra_config": {
+						"backend/http": {
+							"return_error_details": "krakend_backend"
+						}
+					}
+                }
+            ]	
+		},
+		{
 			"endpoint": "/api/classes/",
 			"method": "GET",
 			"input_query_strings": ["department_name"],

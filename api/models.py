@@ -4,6 +4,19 @@ from typing import List, Optional
 from pydantic import BaseModel
 from enum import Enum
 
+class CreateUserRequest(BaseModel):
+    cwid: int
+    first_name: str
+    middle_name: Optional[str] = ""
+    last_name: str
+    username: str
+    password: str
+    role: str
+
+class CreateUserResponse(BaseModel):
+    message: str
+
+
 class AvailableClass(BaseModel):
     course_code: str
     course_name: str

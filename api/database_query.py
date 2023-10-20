@@ -16,7 +16,8 @@ from .models import (
     EnrollmentListResponse,
     WaitlistStudents,
     WaitlistPositionList,
-    DropStudentRequest
+    DropStudentRequest,
+    CreateUserRequest
 )
 
 LIST_AVAILABLE_SQL_QUERY = """
@@ -36,7 +37,45 @@ class DBException(Exception):
         self.error_detail = error_detail
 
 
-    
+def is_username_available(users_connection: Connection, username: str):
+    cursor = users_connection.cursor()
+    response = cursor.execute(f'''
+        SELECT * 
+        FROM Users
+        WHERE
+            username="{username}";
+    ''').fetchone()
+
+    if response: return False
+    return True
+
+
+def add_user(users_connection: Connection, user_info: CreateUserRequest):
+    query = f'''
+        INSERT INTO Users
+        (CWID, Name, Middle, LastName, username, password, Role)
+        VALUES
+        ({user_info.cwid}, "{user_info.first_name}", 
+        "{user_info.middle_name}", "{user_info.last_name}", "{user_info.username}",
+        "{user_info.password}", "{user_info.role}")
+    '''
+
+    cursor = users_connection.cursor()
+    cursor.execute("BEGIN")
+    try:
+        cursor.execute(query)
+        cursor.execute("COMMIT")
+    except Exception as err:
+        logger.error(err)
+        cursor.execute("ROLLBACK")
+        logger.info('Rolling back transaction')
+        raise DBException(error_detail = 'Fail to add user')
+    finally:
+        cursor.close()
+
+    return QueryStatus.SUCCESS
+
+
 def get_available_classes(db_connection: Connection, department_name: str) -> List[AvailableClass]:
     """Query database to get available classes for a given department name
 
