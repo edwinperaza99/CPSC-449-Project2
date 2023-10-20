@@ -13,6 +13,7 @@ from typing import Optional
 
 from .database_query import *
 from .models import *
+from .utils import *
 
 app = FastAPI()
 
@@ -49,6 +50,10 @@ async def create_user(user_info: CreateUserRequest):
     # check if valid role
     if not user_info.role in ['instructor', 'registrar', 'student']:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"role={user_info.role} is not valid!")
+
+    # hash the password before adding it to database
+    hashed_password = hash_password(user_info.password)
+    user_info.password = hashed_password
 
     # create entry in users table
     response = add_user(users_connection, user_info)
