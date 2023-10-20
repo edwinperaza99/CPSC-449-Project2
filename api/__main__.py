@@ -16,7 +16,7 @@ from .models import *
 
 app = FastAPI()
 
-DATABASE_URL = "./api/var/primary/fuse/classes.db"
+DATABASE_URL = "./api/var/enrollments.db"
 USERS_DB_URL = "./api/var/primary/fuse/users.db"
 
 db_connection = sqlite3.connect(DATABASE_URL)
