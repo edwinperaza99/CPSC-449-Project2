@@ -71,11 +71,15 @@ async def authenticate_user(username: str, password: str):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"username or password is invalid!")
     
     # check if password is correct
-    true_password_hashed = get_password(users_connection, username)
-    if not verify_password(password, true_password_hashed):
+    user = get_user(users_connection, username)
+    password_hash = user[5] # based on users schema
+    if not verify_password(password, password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"username or password is invalid!")
     
-    return AuthenticateUserResponse(message="login successfull!")
+    userid = user[0]
+    role = user[6]
+    jwt_claims = generate_claims(username, userid, role)
+    return AuthenticateUserResponse(jwt=jwt_claims, message="login successfull!")
 
 
 ##########   STUDENTS ENDPOINTS     ######################

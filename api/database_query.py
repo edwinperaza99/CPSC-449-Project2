@@ -64,17 +64,17 @@ def add_user(users_connection: Connection, user_info: CreateUserRequest):
     return QueryStatus.SUCCESS
 
 
-def get_password(users_connection: Connection, username: str):
+def get_user(users_connection: Connection, username: str):
     cursor = users_connection.cursor()
     response = cursor.execute(f'''
-        SELECT password
+        SELECT *
         FROM Users
         WHERE
             username="{username}";
     ''').fetchone()
 
     if not response: return None
-    return response[0]
+    return response
 
 def get_available_classes(db_connection: Connection, department_name: str) -> List[AvailableClass]:
     """Query database to get available classes for a given department name

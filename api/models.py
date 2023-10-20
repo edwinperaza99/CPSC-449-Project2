@@ -17,6 +17,7 @@ class CreateUserResponse(BaseModel):
     message: str
 
 class AuthenticateUserResponse(BaseModel):
+    jwt: str
     message: str
 
 class AvailableClass(BaseModel):
