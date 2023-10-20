@@ -11,77 +11,30 @@ import uvicorn
 from uvicorn.server import Server
 from typing import Optional
 
-from .database_query import (
-    DBException,
-    check_enrollment_eligibility,
-    check_user_role,
-    complete_registration,
-    get_available_classes,
-    update_student_registration_status,
-    addClass,
-    check_class_exists,
-    addSection,
-    check_section_exists,
-    deleteSection,
-    changeSectionInstructor,
-    freezeEnrollment,
-    check_status_query,
-    check_if_active,
-    check_is_instructor,
-    get_enrolled_students,
-    get_dropped_students,
-    get_waitlist_status,
-    get_waitlist,
-    check_is_enrolled,
-    check_is_instructor_of_section,
-    get_waitlisted_students,
-    drop_student
-)
-from .models import (
-    AvailableClassResponse,
-    EnrollmentRequest,
-    EnrollmentResponse,
-    QueryStatus,
-    Registration,
-    RegistrationStatus,
-    UserRole,
-    DropCourseResponse,
-    AddClassResponse,
-    AddClassRequest,
-    DeleteSectionRequest,
-    DeleteSectionResponse,
-    ChangeInstructorRequest,
-    ChangeInstructorResponse,
-    FreezeEnrollmentRequest,
-    FreezeEnrollmentResponse,
-    EnrollmentListResponse,
-    RecordsEnrollmentResponse,
-    RecordsWaitlistResponse,
-    RecordsDroppedResponse,
-    WaitlistPositionReq,
-    WaitlistPositionRes,
-    ViewWaitlistReq,
-    ViewWaitlistRes,
-    WaitlistStudents,
-    WaitlistPositionList,
-    DropStudentRequest,
-    DroppedResponse
-)
+from .database_query import *
+from .models import *
 
 app = FastAPI()
+
 DATABASE_URL = "./api/var/primary/fuse/classes.db"
+USERS_DB_URL = "./api/var/primary/fuse/users.db"
+
 db_connection = sqlite3.connect(DATABASE_URL)
 db_connection.isolation_level = None
 
+users_connection = sqlite3.connect(USERS_DB_URL)
+users_connection.isolation_level = None
 
 @app.on_event("shutdown")
 async def shutdown():
     db_connection.close()
+    users_connection.close()
 
 @app.get(path='/db_liveness', operation_id='check_db_health')
 async def check_db_health():
     try:
         db_connection.cursor()
+        users_connection.cursor()
         return JSONResponse(content= {'status': 'ok'}, status_code = status.HTTP_200_OK)
     except Exception as ex:
         return JSONResponse(content= {'status': 'not connected'}, status_code = status.HTTP_503_SERVICE_UNAVAILABLE)
