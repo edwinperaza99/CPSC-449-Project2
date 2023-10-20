@@ -16,6 +16,8 @@ class CreateUserRequest(BaseModel):
 class CreateUserResponse(BaseModel):
     message: str
 
+class AuthenticateUserResponse(BaseModel):
+    message: str
 
 class AvailableClass(BaseModel):
     course_code: str

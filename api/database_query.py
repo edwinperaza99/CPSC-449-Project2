@@ -5,20 +5,8 @@ from fastapi import HTTPException, status
 from loguru import logger
 from typing import Optional
 
-from .models import (
-    AvailableClass,
-    EnrollmentRequest,
-    EnrollmentResponse,
-    QueryStatus,
-    Registration,
-    RegistrationStatus,
-    UserRole,
-    EnrollmentListResponse,
-    WaitlistStudents,
-    WaitlistPositionList,
-    DropStudentRequest,
-    CreateUserRequest
-)
+from .models import *
+
 
 LIST_AVAILABLE_SQL_QUERY = """
 	SELECT available_classes.name as 'course_name', available_classes.coursecode as 'course_code', 
@@ -37,7 +25,7 @@ class DBException(Exception):
         self.error_detail = error_detail
 
 
-def is_username_available(users_connection: Connection, username: str):
+def username_exists(users_connection: Connection, username: str):
     cursor = users_connection.cursor()
     response = cursor.execute(f'''
         SELECT * 
@@ -46,8 +34,8 @@ def is_username_available(users_connection: Connection, username: str):
             username="{username}";
     ''').fetchone()
 
-    if response: return False
-    return True
+    if response: return True
+    return False
 
 
 def add_user(users_connection: Connection, user_info: CreateUserRequest):
@@ -75,6 +63,18 @@ def add_user(users_connection: Connection, user_info: CreateUserRequest):
 
     return QueryStatus.SUCCESS
 
+
+def get_password(users_connection: Connection, username: str):
+    cursor = users_connection.cursor()
+    response = cursor.execute(f'''
+        SELECT password
+        FROM Users
+        WHERE
+            username="{username}";
+    ''').fetchone()
+
+    if not response: return None
+    return response[0]
 
 def get_available_classes(db_connection: Connection, department_name: str) -> List[AvailableClass]:
     """Query database to get available classes for a given department name

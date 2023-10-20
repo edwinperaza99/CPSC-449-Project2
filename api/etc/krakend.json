@@ -18,6 +18,22 @@
             ]	
 		},
 		{
+			"endpoint": "/api/users/authenticate/",
+			"method": "GET",
+			"input_query_strings": ["username", "password"],
+			"backend": [
+				{
+					"url_pattern": "/users/authenticate",
+					"host": ["http://localhost:5000"],
+					"extra_config": {
+						"backend/http": {
+							"return_error_details": "krakend_backend"
+						}
+					}
+				}
+			]	
+		},
+		{
 			"endpoint": "/api/classes/",
 			"method": "GET",
 			"input_query_strings": ["department_name"],
