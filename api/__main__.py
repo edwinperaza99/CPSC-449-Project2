@@ -64,7 +64,7 @@ async def create_user(user_info: CreateUserRequest):
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="some error occurred in database")
 
 
-@app.get(path="/users/authenticate", operation_id="authenticate_user", response_model = AuthenticateUserResponse)
+@app.get(path="/users/authenticate", operation_id="authenticate_user")
 async def authenticate_user(username: str, password: str):
     # check if username exists
     if not username_exists(users_connection, username):
@@ -79,7 +79,7 @@ async def authenticate_user(username: str, password: str):
     userid = user[0]
     role = user[6]
     jwt_claims = generate_claims(username, userid, role)
-    return AuthenticateUserResponse(jwt=jwt_claims, message="login successfull!")
+    return JSONResponse(status_code=status.HTTP_200_OK, content=jwt_claims)
 
 
 ##########   STUDENTS ENDPOINTS     ######################

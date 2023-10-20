@@ -1,8 +1,11 @@
 import base64
+import os
 import hashlib
 import secrets
 import datetime
 import json
+from jwcrypto import jwk
+import sys
 
 ALGORITHM = "pbkdf2_sha256"
 
@@ -52,5 +55,24 @@ def generate_claims(username, user_id, roles):
         "exp": int(exp.timestamp()),
     }
 
-    output = json.dumps(token, indent=4)
-    return output
+    return token
+
+
+def usage():
+    program = os.path.basename(sys.argv[0])
+    print(f"Usage: {program} KEY_ID...", file=sys.stderr)
+
+
+def generate_keys(key_ids):
+    keys = [jwk.JWK.generate(kid=key_id, kty="RSA", alg="RS256") for key_id in key_ids]
+    exported_keys = [
+        key.export(private_key=private) for key in keys for private in [False, True]
+    ]
+    keys_as_json = [json.loads(exported_key) for exported_key in exported_keys]
+    jwks = {"keys": keys_as_json}
+    output = json.dumps(jwks, indent=4)
+    with open("jwk_private_key.json", "w") as outfile:
+        outfile.write(output)
+
+if __name__ == "__main__":
+    generate_keys(sys.argv[1:])

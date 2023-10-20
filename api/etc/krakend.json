@@ -15,7 +15,7 @@
 						}
 					}
                 }
-            ]	
+            ]
 		},
 		{
 			"endpoint": "/api/users/authenticate/",
@@ -31,7 +31,16 @@
 						}
 					}
 				}
-			]	
+			],
+			"extra_config": {
+				"auth/signer": {
+				  "alg": "RS256",
+				  "kid": "project2",
+				  "keys_to_sign": ["access_token", "refresh_token"],
+				  "jwk_local_path": "./jwk_private_key.json",
+				  "disable_jwk_security": true
+				}
+			}
 		},
 		{
 			"endpoint": "/api/classes/",
@@ -42,7 +51,15 @@
 					"url_pattern": "/classes",
 					"host": ["http://localhost:5000"]
 				}
-			]
+			],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"roles": ["instructor"],
+					"jwk_local_path": "./jwk_private_key.json",
+					"cache": true
+				}
+			}
 		},
         {
             "endpoint": "/api/classes/",
