@@ -69,10 +69,12 @@ def generate_keys(key_ids):
         key.export(private_key=private) for key in keys for private in [False, True]
     ]
     keys_as_json = [json.loads(exported_key) for exported_key in exported_keys]
-    jwks = {"keys": keys_as_json}
-    output = json.dumps(jwks, indent=4)
+    jwk0 = {"keys": keys_as_json[0]}
+    jwk1 = {"keys": keys_as_json[1]}
+    with open("jwk_public_key.json", "w") as outfile:
+        outfile.write(json.dumps(jwk0, indent=4))
     with open("jwk_private_key.json", "w") as outfile:
-        outfile.write(output)
+        outfile.write(json.dumps(jwk1, indent=4))
 
 if __name__ == "__main__":
     generate_keys(sys.argv[1:])
