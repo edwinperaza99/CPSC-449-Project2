@@ -4,18 +4,18 @@
 	"endpoints": [
 		{
 			"endpoint": "/api/users/create/",
-            "method": "POST",
-            "backend": [
-                {
-                    "url_pattern": "/users/create",
-                    "host": ["http://localhost:5000"],
-                    "extra_config": {
+			"method": "POST",
+			"backend": [
+				{
+					"url_pattern": "/users/create",
+					"host": ["http://localhost:5000"],
+					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
 						}
 					}
-                }
-            ]
+				}
+			]
 		},
 		{
 			"endpoint": "/api/users/authenticate/",
@@ -34,23 +34,27 @@
 			],
 			"extra_config": {
 				"auth/signer": {
-				  "alg": "RS256",
-				  "kid": "sig2",
-				  "keys_to_sign": ["access_token", "refresh_token"],
-				  "jwk_local_path": "./jwk_private_key.json",
-				  "disable_jwk_security": true
+					"alg": "RS256",
+					"kid": "sig2",
+					"keys_to_sign": ["access_token", "refresh_token"],
+					"jwk_local_path": "./jwk_private_key.json",
+					"disable_jwk_security": true
 				}
 			}
 		},
 		{
 			"endpoint": "/api/classes/",
 			"method": "GET",
-			"input_headers": ["Authorization"],
 			"input_query_strings": ["department_name"],
 			"backend": [
 				{
 					"url_pattern": "/classes",
-					"host": ["http://localhost:5000"]
+					"host": ["http://localhost:5000"],
+					"extra_config": {
+						"backend/http": {
+							"return_error_details": "krakend_backend"
+						}
+					}
 				}
 			],
 			"extra_config": {
@@ -75,7 +79,16 @@
 						}
 					}
                 }
-            ]
+            ],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"jwk_local_path": "./jwk_public_key.json",
+					"roles": ["registrar"],
+					"disable_jwk_security": true,
+					"operation_debug": true
+				}
+			}
         },
         {
             "endpoint": "/api/enrollment/",
@@ -91,7 +104,16 @@
 						}
 					}
                 }
-            ]
+            ],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"jwk_local_path": "./jwk_public_key.json",
+					"roles": ["instructor"],
+					"disable_jwk_security": true,
+					"operation_debug": true
+				}
+			}
         },
         {
 			"endpoint": "/api/dropcourse/",
@@ -107,7 +129,16 @@
 						}
 					}
 				}
-			]
+			],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"jwk_local_path": "./jwk_public_key.json",
+					"roles": ["student"],
+					"disable_jwk_security": true,
+					"operation_debug": true
+				}
+			}
 		},
         {
 			"endpoint": "/api/sections/",
@@ -123,7 +154,16 @@
 						}
 					}
 				}
-			]
+			],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"jwk_local_path": "./jwk_public_key.json",
+					"roles": ["registrar"],
+					"disable_jwk_security": true,
+					"operation_debug": true
+				}
+			}
 		},
         {
 			"endpoint": "/api/changeSectionInstructor/",
@@ -139,7 +179,16 @@
 						}
 					}
 				}
-			]
+			],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"jwk_local_path": "./jwk_public_key.json",
+					"roles": ["registrar"],
+					"disable_jwk_security": true,
+					"operation_debug": true
+				}
+			}
 		},
         {
 			"endpoint": "/api/freezeEnrollment/",
@@ -155,7 +204,16 @@
 						}
 					}
 				}
-			]
+			],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"jwk_local_path": "./jwk_public_key.json",
+					"roles": ["registrar"],
+					"disable_jwk_security": true,
+					"operation_debug": true
+				}
+			}
 		},
         {
 			"endpoint": "/api/waitlist_position/",
@@ -165,9 +223,23 @@
 				{
 					"url_pattern": "/waitlist_position",
 					"method": "GET",
-					"host": ["http://localhost:5000"]
+					"host": ["http://localhost:5000"],
+					"extra_config": {
+						"backend/http": {
+							"return_error_details": "krakend_backend"
+						}
+					}
 				}
-			]
+			],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"jwk_local_path": "./jwk_public_key.json",
+					"roles": ["student"],
+					"disable_jwk_security": true,
+					"operation_debug": true
+				}
+			}
 		},
         { 
 			"endpoint": "/api/view_waitlist/",
@@ -177,9 +249,23 @@
 				{
 					"url_pattern": "/view_waitlist",
 					"method": "GET",
-					"host": ["http://localhost:5000"]
+					"host": ["http://localhost:5000"],
+					"extra_config": {
+						"backend/http": {
+							"return_error_details": "krakend_backend"
+						}
+					}
 				}
-			]
+			],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"jwk_local_path": "./jwk_public_key.json",
+					"roles": ["instructor"],
+					"disable_jwk_security": true,
+					"operation_debug": true
+				}
+			}
 		},
         {
 			"endpoint": "/api/classEnrollment/",
@@ -189,9 +275,23 @@
 				{
 					"url_pattern": "/classEnrollment",
 					"method": "GET",
-					"host": ["http://localhost:5000"]
+					"host": ["http://localhost:5000"],
+					"extra_config": {
+						"backend/http": {
+							"return_error_details": "krakend_backend"
+						}
+					}
 				}
-			]
+			],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"jwk_local_path": "./jwk_public_key.json",
+					"roles": ["instructor"],
+					"disable_jwk_security": true,
+					"operation_debug": true
+				}
+			}
 		},
         {
 			"endpoint": "/api/classWaitlist/",
@@ -201,9 +301,23 @@
 				{
 					"url_pattern": "/classWaitlist",
 					"method": "GET",
-					"host": ["http://localhost:5000"]
+					"host": ["http://localhost:5000"],
+					"extra_config": {
+						"backend/http": {
+							"return_error_details": "krakend_backend"
+						}
+					}
 				}
-			]
+			],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"jwk_local_path": "./jwk_public_key.json",
+					"roles": ["instructor"],
+					"disable_jwk_security": true,
+					"operation_debug": true
+				}
+			}
 		},
         {
 			"endpoint": "/api/classDropped/",
@@ -213,9 +327,23 @@
 				{
 					"url_pattern": "/classDropped",
 					"method": "GET",
-					"host": ["http://localhost:5000"]
+					"host": ["http://localhost:5000"],
+					"extra_config": {
+						"backend/http": {
+							"return_error_details": "krakend_backend"
+						}
+					}
 				}
-			]
+			],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"jwk_local_path": "./jwk_public_key.json",
+					"roles": ["instructor"],
+					"disable_jwk_security": true,
+					"operation_debug": true
+				}
+			}
 		},
         {
 			"endpoint": "/api/dropStudent/",
@@ -231,7 +359,16 @@
 						}
 					}
 				}
-			]
+			],
+			"extra_config": {
+				"auth/validator": {
+					"alg": "RS256",
+					"jwk_local_path": "./jwk_public_key.json",
+					"roles": ["instructor"],
+					"disable_jwk_security": true,
+					"operation_debug": true
+				}
+			}
 		}
     ]
 }
