@@ -8,7 +8,7 @@
 			"backend": [
 				{
 					"url_pattern": "/users/create",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5100"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -24,7 +24,7 @@
 			"backend": [
 				{
 					"url_pattern": "/users/authenticate",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5100"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -49,7 +49,7 @@
 			"backend": [
 				{
 					"url_pattern": "/classes",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -72,7 +72,7 @@
             "backend": [
                 {
                     "url_pattern": "/classes",
-                    "host": ["http://localhost:5000"],
+                    "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
                     "extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -97,7 +97,7 @@
                 {
                     "url_pattern": "/enrollment",
                     "method": "POST",
-                    "host": ["http://localhost:5000"],
+                    "host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
                     "extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -122,7 +122,7 @@
 				{
 					"url_pattern": "/dropcourse",
 					"method": "PUT",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -147,7 +147,7 @@
 				{
 					"url_pattern": "/sections",
 					"method": "DELETE",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -172,7 +172,7 @@
 				{
 					"url_pattern": "/changeSectionInstructor",
 					"method": "POST",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -197,7 +197,7 @@
 				{
 					"url_pattern": "/freezeEnrollment",
 					"method": "POST",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -223,7 +223,7 @@
 				{
 					"url_pattern": "/waitlist_position",
 					"method": "GET",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -249,7 +249,7 @@
 				{
 					"url_pattern": "/view_waitlist",
 					"method": "GET",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -275,7 +275,7 @@
 				{
 					"url_pattern": "/classEnrollment",
 					"method": "GET",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -301,7 +301,7 @@
 				{
 					"url_pattern": "/classWaitlist",
 					"method": "GET",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -327,7 +327,7 @@
 				{
 					"url_pattern": "/classDropped",
 					"method": "GET",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
@@ -352,7 +352,7 @@
 				{
 					"url_pattern": "/dropStudent",
 					"method": "POST",
-					"host": ["http://localhost:5000"],
+					"host": ["http://localhost:5000", "http://localhost:5001", "http://localhost:5002"],
 					"extra_config": {
 						"backend/http": {
 							"return_error_details": "krakend_backend"
