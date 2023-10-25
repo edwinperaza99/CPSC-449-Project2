@@ -17,10 +17,10 @@ remove_directory_structure() {
 
 # Remove the existing directory structures if they exist
 remove_directory_structure "primary"
-remove_directory_structure "secondary"
-remove_directory_structure "tertiary"
+remove_directory_structure "secondary-1"
+remove_directory_structure "secondary-2"
 
 # Create the directory structures
 create_directory_structure "primary"
-create_directory_structure "secondary"
-create_directory_structure "tertiary"
+create_directory_structure "secondary-1"
+create_directory_structure "secondary-2"

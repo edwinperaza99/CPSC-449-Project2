@@ -1,6 +1,8 @@
 import sqlite3
+import contextlib
 
-from fastapi import FastAPI, HTTPException, status
+
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 
 from .database_query import *
@@ -9,27 +11,29 @@ from .utils import *
 
 app = FastAPI()
 
-USERS_DB_URL = "./api/var/primary/fuse/users.db"
+current_index = 0
+ 
+USERS_PRIMARY_DB_URL = "./api/var/primary/fuse/users.db"
+USERS_SECONDARY_DB_URLS = ["./api/var/secondary-1/fuse/users.db", "./api/var/secondary-2/fuse/users.db"]
 
-users_connection = sqlite3.connect(USERS_DB_URL)
-users_connection.isolation_level = None
+def get_primary_db():
+    with contextlib.closing(sqlite3.connect(USERS_PRIMARY_DB_URL, check_same_thread = False)) as db:
+        db.row_factory = sqlite3.Row
+        db.isolation_level = None
+        yield db
 
-@app.on_event("shutdown")
-async def shutdown():
-    users_connection.close()
-
-@app.get(path='/db_liveness', operation_id='check_db_health')
-async def check_db_health():
-    try:
-        users_connection.cursor()
-        return JSONResponse(content= {'status': 'ok'}, status_code = status.HTTP_200_OK)
-    except Exception as ex:
-        return JSONResponse(content= {'status': 'not connected'}, status_code = status.HTTP_503_SERVICE_UNAVAILABLE)
+def get_secondary_db():
+    global current_index
+    with contextlib.closing(sqlite3.connect(USERS_SECONDARY_DB_URLS[current_index], check_same_thread = False)) as db:
+        db.row_factory = sqlite3.Row
+        db.isolation_level = None
+        yield db
+    current_index = (current_index + 1) % len(USERS_SECONDARY_DB_URLS)
     
 
 ##########   USERS ENDPOINTS        ######################
 @app.post(path='/users/create', operation_id='create_user', response_model = CreateUserResponse)
-async def create_user(user_info: CreateUserRequest):
+async def create_user(user_info: CreateUserRequest, users_connection = Depends(get_primary_db)):
     # check if username is available
     if username_exists(users_connection, user_info.username):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'username="{user_info.username}" already exist!')
@@ -52,7 +56,7 @@ async def create_user(user_info: CreateUserRequest):
 
 
 @app.get(path="/users/authenticate", operation_id="authenticate_user")
-async def authenticate_user(username: str, password: str):
+async def authenticate_user(username: str, password: str, users_connection = Depends(get_secondary_db)):
     # check if username exists
     if not username_exists(users_connection, username):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"username or password is invalid!")

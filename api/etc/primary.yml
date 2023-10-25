@@ -1,17 +1,17 @@
 fuse:
-  dir: "./var/primary/fuse"
+  dir: "./api/var/primary/fuse"
   allow-other: false
 
 data:
-  dir: "./var/primary/data"
+  dir: "./api/var/primary/data"
   compress: true
 
-exec: uvicorn --port $PORT api:app --reload
+exec: uvicorn --port $PORT api.users:app --reload
 
 http:
   addr: ":20202"
 
 lease:
-  type: “static”
+  type: "static"
   candidate: true
   advertise-url: http://localhost:20202
