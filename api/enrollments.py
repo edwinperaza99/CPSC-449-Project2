@@ -2,29 +2,47 @@
 
 from datetime import datetime
 import sqlite3
+import contextlib
+import logging
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from loguru import logger
 from typing import Optional
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings
 
 from .database_query import *
 from .models import *
 from .utils import *
 
-app = FastAPI()
-
 DATABASE_URL = "./api/var/enrollments.db"
 
-db_connection = sqlite3.connect(DATABASE_URL)
-db_connection.isolation_level = None
+class Settings(BaseSettings, env_file=".env", extra="ignore"):
+    database: str
+    logging_config: str
+
+def get_logger():
+    return logging.getLogger(__name__)
+
+def get_db(logger: logging.Logger = Depends(get_logger)):
+    with contextlib.closing(sqlite3.connect(DATABASE_URL, check_same_thread = False)) as db:
+        db.row_factory = sqlite3.Row
+        db.isolation_level = None
+        db.set_trace_callback(logger.debug)
+        yield db
+
+settings = Settings()
+app = FastAPI()
+
+logging.config.fileConfig(settings.logging_config, disable_existing_loggers = False)
 
 @app.on_event("shutdown")
-async def shutdown():
+async def shutdown(db_connection = Depends(get_db)):
     db_connection.close()
 
 @app.get(path='/db_liveness', operation_id='check_db_health')
-async def check_db_health():
+async def check_db_health(db_connection = Depends(get_db)):
     try:
         db_connection.cursor()
         return JSONResponse(content= {'status': 'ok'}, status_code = status.HTTP_200_OK)
@@ -34,7 +52,7 @@ async def check_db_health():
 
 ##########   STUDENTS ENDPOINTS     ######################
 @app.get(path="/classes", operation_id="available_classes", response_model = AvailableClassResponse)
-async def available_classes(department_name: str):
+async def available_classes(department_name: str, db_connection = Depends(get_db)):
     """API to fetch list of available classes for a given department name.
 
     Args:
@@ -48,7 +66,7 @@ async def available_classes(department_name: str):
     return AvailableClassResponse(available_classes = result)
 
 @app.post(path ="/enrollment", operation_id="course_enrollment", response_model= EnrollmentResponse)
-async def course_enrollment(enrollment_request: EnrollmentRequest):
+async def course_enrollment(enrollment_request: EnrollmentRequest, db_connection = Depends(get_db)):
     """Allow enrollment of a course under given section for a student
 
     Args:
@@ -88,7 +106,7 @@ async def course_enrollment(enrollment_request: EnrollmentRequest):
 
 
 @app.put(path = "/dropcourse", operation_id= "update_registration_status",response_model= DropCourseResponse)
-async def update_registration_status(enrollment_request:EnrollmentRequest):
+async def update_registration_status(enrollment_request:EnrollmentRequest, db_connection = Depends(get_db)):
     """API for students to drop a course
 
     Args:
@@ -120,7 +138,7 @@ async def update_registration_status(enrollment_request:EnrollmentRequest):
 
 ##########   REGISTRAR ENDPOINTS     ######################
 @app.post(path="/classes", operation_id="add_class", response_model=AddClassResponse)
-async def add_class(addClass_request: AddClassRequest):
+async def add_class(addClass_request: AddClassRequest, db_connection = Depends(get_db)):
     classExists = check_class_exists(db_connection, addClass_request.course_code)
     if classExists:
         try:
@@ -146,7 +164,7 @@ async def add_class(addClass_request: AddClassRequest):
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= err.error_detail)
 
 @app.delete(path="/sections", operation_id="delete_section", response_model=DeleteSectionResponse)  
-async def delete_section(deleteSection_Request: DeleteSectionRequest):
+async def delete_section(deleteSection_Request: DeleteSectionRequest, db_connection = Depends(get_db)):
     sectionExists = check_section_exists(db_connection, deleteSection_Request.course_code, deleteSection_Request.section_number)
     if not sectionExists:
         raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail= f'This section does not exist')
@@ -157,7 +175,7 @@ async def delete_section(deleteSection_Request: DeleteSectionRequest):
         return DeleteSectionResponse(deleteSection_status = 'Failed to delete section')
     
 @app.post(path="/changeSectionInstructor", operation_id="change_section_instructor", response_model=ChangeInstructorResponse)
-async def change_section_instructor(changeInstructor_Request: ChangeInstructorRequest):
+async def change_section_instructor(changeInstructor_Request: ChangeInstructorRequest, db_connection = Depends(get_db)):
     sectionExists = check_section_exists(db_connection, changeInstructor_Request.course_code, changeInstructor_Request.section_number)
     if sectionExists == 0:
         raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail= f'This section does not exist')
@@ -168,7 +186,7 @@ async def change_section_instructor(changeInstructor_Request: ChangeInstructorRe
         return ChangeInstructorResponse(changeInstructor_status = 'Failed to change instructor')
     
 @app.post(path="/freezeEnrollment", operation_id='freeze_enrollment', response_model=FreezeEnrollmentResponse)
-async def freeze_enrollment(freezeEnrollment_Request: FreezeEnrollmentRequest):
+async def freeze_enrollment(freezeEnrollment_Request: FreezeEnrollmentRequest, db_connection = Depends(get_db)):
     sectionExists = check_section_exists(db_connection, freezeEnrollment_Request.course_code, freezeEnrollment_Request.section_number)
     if sectionExists == 0:
         raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail= f'This section does not exist')
@@ -184,7 +202,7 @@ async def freeze_enrollment(freezeEnrollment_Request: FreezeEnrollmentRequest):
 ##########   WAITLIST ENDPOINTS     ######################
 # student viewing their position in the waitlist
 @app.get(path="/waitlist_position", operation_id="waitlist_position", response_model = WaitlistPositionRes)
-async def waitlist_position(student_id: int):
+async def waitlist_position(student_id: int, db_connection = Depends(get_db)):
     """API to fetch the current position of a student in a waitlist.
     Args:
         student_id: int
@@ -198,7 +216,7 @@ async def waitlist_position(student_id: int):
 
 # instructors viewing the current waitlist for a course and section
 @app.get(path="/view_waitlist", operation_id="view_waitlist", response_model = ViewWaitlistRes)
-async def view_waitlist(course_code: str, section_number: int):
+async def view_waitlist(course_code: str, section_number: int, db_connection = Depends(get_db)):
     """API to fetch the students in a waitlist.
     Args:
         section_number: int
@@ -217,7 +235,7 @@ async def view_waitlist(course_code: str, section_number: int):
 
 ##########   INSTRUCTOR ENDPOINTS     ######################
 @app.get(path="/classEnrollment", operation_id="list_enrollment", response_model=RecordsEnrollmentResponse)
-async def list_enrollment(instructor_id: int, section_number: Optional[int] = None, course_code: Optional[str] = None):
+async def list_enrollment(instructor_id: int, section_number: Optional[int] = None, course_code: Optional[str] = None, db_connection = Depends(get_db)):
     """API to fetch list of enrolled students for a given instructor.
 
     Args:
@@ -236,9 +254,9 @@ async def list_enrollment(instructor_id: int, section_number: Optional[int] = No
     logger.info('Successfully executed list_enrollment')
     return RecordsEnrollmentResponse(enrolled_students = result)
 
-# TODO: test this endpoint 
+
 @app.get(path="/classWaitlist", operation_id="list_waitlist", response_model=RecordsWaitlistResponse)
-async def list_waitlist(instructor_id: int, section_number: Optional[int] = None, course_code: Optional[str] = None):
+async def list_waitlist(instructor_id: int, section_number: Optional[int] = None, course_code: Optional[str] = None, db_connection = Depends(get_db)):
     """API to fetch list of enrolled students for a given instructor.
 
     Args:
@@ -258,7 +276,7 @@ async def list_waitlist(instructor_id: int, section_number: Optional[int] = None
     return RecordsWaitlistResponse(waitlisted_students = result)
 
 @app.get(path="/classDropped", operation_id="list_dropped", response_model=RecordsDroppedResponse)
-async def list_dropped(instructor_id: int, section_number: Optional[int] = None, course_code: Optional[str] = None):
+async def list_dropped(instructor_id: int, section_number: Optional[int] = None, course_code: Optional[str] = None, db_connection = Depends(get_db)):
     """API to fetch list of dropped students for a given section.
 
     Args:
@@ -278,7 +296,7 @@ async def list_dropped(instructor_id: int, section_number: Optional[int] = None,
     return RecordsDroppedResponse(dropped_students = result)
 
 @app.post(path="/dropStudent", operation_id="instructor_drop_student", response_model=DroppedResponse)
-async def instructor_drop_student(DropRequest: DropStudentRequest):
+async def instructor_drop_student(DropRequest: DropStudentRequest, db_connection = Depends(get_db)):
     """API to drop a student from a section.
 
     Args:

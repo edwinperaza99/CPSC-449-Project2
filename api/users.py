@@ -1,34 +1,49 @@
 import sqlite3
 import contextlib
+import logging
 
 
 from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings
 
 from .database_query import *
 from .models import *
 from .utils import *
-
-app = FastAPI()
 
 current_index = 0
  
 USERS_PRIMARY_DB_URL = "./api/var/primary/fuse/users.db"
 USERS_SECONDARY_DB_URLS = ["./api/var/secondary-1/fuse/users.db", "./api/var/secondary-2/fuse/users.db"]
 
-def get_primary_db():
+class Settings(BaseSettings, env_file=".env", extra="ignore"):
+    database: str
+    logging_config: str
+
+def get_logger():
+    return logging.getLogger(__name__)
+
+def get_primary_db(logger: logging.Logger = Depends(get_logger)):
     with contextlib.closing(sqlite3.connect(USERS_PRIMARY_DB_URL, check_same_thread = False)) as db:
         db.row_factory = sqlite3.Row
         db.isolation_level = None
+        db.set_trace_callback(logger.debug)
         yield db
 
-def get_secondary_db():
+def get_secondary_db(logger: logging.Logger = Depends(get_logger)):
     global current_index
     with contextlib.closing(sqlite3.connect(USERS_SECONDARY_DB_URLS[current_index], check_same_thread = False)) as db:
         db.row_factory = sqlite3.Row
         db.isolation_level = None
+        db.set_trace_callback(logger.debug)
         yield db
     current_index = (current_index + 1) % len(USERS_SECONDARY_DB_URLS)
+
+settings = Settings()
+app = FastAPI()
+
+logging.config.fileConfig(settings.logging_config, disable_existing_loggers = False)
     
 
 ##########   USERS ENDPOINTS        ######################
