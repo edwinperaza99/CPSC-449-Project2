@@ -53,6 +53,14 @@ CREATE TABLE IF NOT EXISTS RegistrationList (
     FOREIGN KEY (CourseCode, SectionNumber) REFERENCES Section (CourseCode, SectionNumber)
 );
 
+-- create recommended indexes
+CREATE INDEX IF NOT EXISTS Section_idx_4d625b2c ON Section(CourseCode);
+CREATE INDEX IF NOT EXISTS Class_idx_48dbce2c ON Class(Department);
+CREATE INDEX IF NOT EXISTS RegistrationList_idx_3288ecfe ON RegistrationList(StudentID, SectionNumber, CourseCode);
+CREATE INDEX IF NOT EXISTS RegistrationList_idx_fd1ab7f8 ON RegistrationList(Status, CourseCode, SectionNumber, EnrollmentDate);
+CREATE INDEX IF NOT EXISTS Section_idx_911da334 ON Section(InstructorID, SectionNumber, CourseCode);
+CREATE INDEX IF NOT EXISTS RegistrationList_idx_0a52ae26 ON RegistrationList(Status, StudentID, CourseCode, SectionNumber);
+
 -- pre populate database 
 -- chatGPT was used to generate some of the data
 -- Users Table
